@@ -30,6 +30,7 @@ async function connectToDatabase() {
     if (!cached.promise) {
         const opts = {
             bufferCommands: false, // Disable Mongoose buffering for faster serverless response
+            serverSelectionTimeoutMS: 5000,
         };
 
         cached.promise = mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/simulador-votacion', opts).then((mongoose) => {
@@ -54,8 +55,9 @@ connectToDatabase();
 // Routes
 
 // Guardar un evento (POST)
-app.post('/api/events', async (req, res) => {
+app.post(['/api/events', '/events'], async (req, res) => {
     try {
+        await connectToDatabase();
         const { id, timestamp, sessionId, eventType, data } = req.body;
 
         // Validar datos básicos
@@ -80,8 +82,9 @@ app.post('/api/events', async (req, res) => {
 });
 
 // Obtener todos los eventos (GET) - Para el Dashboard
-app.get('/api/events', async (req, res) => {
+app.get(['/api/events', '/events'], async (req, res) => {
     try {
+        await connectToDatabase();
         const events = await AnalyticsEvent.find().sort({ timestamp: -1 }); // Más recientes primero
         res.json(events);
     } catch (error) {
