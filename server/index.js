@@ -1,0 +1,77 @@
+console.log('Iniciando servidor...');
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import AnalyticsEvent from './models/AnalyticsEvent.js';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Database Connection
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/simulador-votacion', {})
+    .then(() => console.log('✅ Connected to MongoDB'))
+    .catch((err) => console.error('❌ MongoDB Connection Error:', err));
+
+// Routes
+
+// Guardar un evento (POST)
+app.post('/api/events', async (req, res) => {
+    try {
+        const { id, timestamp, sessionId, eventType, data } = req.body;
+
+        // Validar datos básicos
+        if (!id || !sessionId || !eventType) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        const newEvent = new AnalyticsEvent({
+            id,
+            timestamp: timestamp || Date.now(),
+            sessionId,
+            eventType,
+            data
+        });
+
+        await newEvent.save();
+        res.status(201).json({ message: 'Event tracked successfully', event: newEvent });
+    } catch (error) {
+        console.error('Error saving event:', error);
+        res.status(500).json({ error: 'Failed to save event' });
+    }
+});
+
+// Obtener todos los eventos (GET) - Para el Dashboard
+app.get('/api/events', async (req, res) => {
+    try {
+        const events = await AnalyticsEvent.find().sort({ timestamp: -1 }); // Más recientes primero
+        res.json(events);
+    } catch (error) {
+        console.error('Error fetching events:', error);
+        res.status(500).json({ error: 'Failed to fetch events' });
+    }
+});
+
+// Endpoint de salud
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
+
+app.get('/', (req, res) => {
+    res.status(200).send('Backend simulador votacion');
+});
+
+// Solo escuchar en puerto local si no estamos en entorno serverless (Vercel exporta la app)
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT}`);
+    });
+}
+
+export default app;
