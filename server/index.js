@@ -15,9 +15,41 @@ app.use(cors());
 app.use(express.json());
 
 // Database Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/simulador-votacion', {})
-    .then(() => console.log('✅ Connected to MongoDB'))
-    .catch((err) => console.error('❌ MongoDB Connection Error:', err));
+// Database Connection Enhancement for Serverless
+let cached = global.mongoose;
+
+if (!cached) {
+    cached = global.mongoose = { conn: null, promise: null };
+}
+
+async function connectToDatabase() {
+    if (cached.conn) {
+        return cached.conn;
+    }
+
+    if (!cached.promise) {
+        const opts = {
+            bufferCommands: false, // Disable Mongoose buffering for faster serverless response
+        };
+
+        cached.promise = mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/simulador-votacion', opts).then((mongoose) => {
+            console.log('✅ Connected to MongoDB');
+            return mongoose;
+        });
+    }
+
+    try {
+        cached.conn = await cached.promise;
+    } catch (e) {
+        cached.promise = null;
+        throw e;
+    }
+
+    return cached.conn;
+}
+
+// Llamar a connectToDatabase al inicializar
+connectToDatabase();
 
 // Routes
 
