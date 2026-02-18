@@ -93,6 +93,18 @@ app.get(['/api/events', '/events'], async (req, res) => {
     }
 });
 
+// Borrar todos los eventos (DELETE) - Reiniciar base de datos
+app.delete(['/api/events', '/events'], async (req, res) => {
+    try {
+        await connectToDatabase();
+        await AnalyticsEvent.deleteMany({});
+        res.json({ message: 'Database reset successfully' });
+    } catch (error) {
+        console.error('Error resetting database:', error);
+        res.status(500).json({ error: 'Failed to reset database' });
+    }
+});
+
 // Endpoint de salud
 app.get('/health', (req, res) => {
     res.status(200).send('OK');

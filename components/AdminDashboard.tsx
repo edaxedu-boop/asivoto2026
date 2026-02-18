@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { analytics, AnalyticsSummary } from '../analytics';
 import { PARTIES } from '../constants';
-import { BarChart3, Users, CheckCircle, XCircle, Share2, Clock, TrendingUp, Download, RefreshCw } from 'lucide-react';
+import { BarChart3, Users, CheckCircle, Share2, Clock, TrendingUp, Download, RefreshCw, Trash2 } from 'lucide-react';
 
 interface AdminDashboardProps {
     onBack: () => void;
@@ -46,6 +46,20 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
         a.download = `reporte-votos-${new Date().toISOString().slice(0, 10)}.csv`;
         a.click();
         URL.revokeObjectURL(url);
+    };
+
+    const handleReset = async () => {
+        if (window.confirm('⚠️ ¿ESTÁS SEGURO?\n\nEsta acción borrará TODOS los datos de votación de la base de datos permanentemente.\n\nEsta acción no se puede deshacer.')) {
+            setLoading(true);
+            const success = await analytics.resetBackendData();
+            if (success) {
+                alert('Base de datos borrada correctamente.');
+                window.location.reload();
+            } else {
+                alert('Error al borrar los datos.');
+                setLoading(false);
+            }
+        }
     };
 
     const formatDuration = (ms: number) => {
@@ -101,6 +115,13 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
                                 Exportar
                             </button>
                             <button
+                                onClick={handleReset}
+                                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all border border-red-500 shadow-lg"
+                            >
+                                <Trash2 className="w-5 h-5" />
+                                Borrar Datos
+                            </button>
+                            <button
                                 onClick={onBack}
                                 className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all"
                             >
@@ -135,19 +156,7 @@ export function AdminDashboard({ onBack }: AdminDashboardProps) {
                         <p className="text-white/60 text-xs mt-1">{summary.completionRate.toFixed(1)}% tasa de finalización</p>
                     </div>
 
-                    <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
-                        <div className="flex items-center justify-between mb-2">
-                            <XCircle className="w-8 h-8 text-red-400" />
-                            <span className="text-3xl font-bold text-white">{summary.abandonedSessions}</span>
-                        </div>
-                        <p className="text-white/80 text-sm">Sesiones Abandonadas</p>
-                        <div className="mt-2 bg-red-500/20 rounded-full h-2">
-                            <div
-                                className="bg-red-500 h-2 rounded-full transition-all"
-                                style={{ width: `${100 - summary.completionRate}%` }}
-                            />
-                        </div>
-                    </div>
+
 
                     <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
                         <div className="flex items-center justify-between mb-2">

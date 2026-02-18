@@ -142,42 +142,32 @@ export const SummaryView: React.FC<SummaryViewProps> = ({ votes, selectedDistric
   };
 
   const handleShare = async () => {
-    const shareData = {
-      title: 'Mi Simulacro de Voto 2026',
-      text: "¡Mira mi simulacro de voto! Practica tú también aquí: ",
-      url: window.location.href,
-    };
-
     setIsSharing(true);
     try {
-      const blob = await generatePDFBlob();
-      if (!blob) throw new Error("No se pudo generar el archivo");
+      const shareData = {
+        title: 'Simulador de Votación 2026',
+        text: '¡Mira mi simulacro de voto! Practica tú también aquí:',
+        url: window.location.href
+      };
 
-      const file = new File([blob], `mi-voto-digital.pdf`, { type: 'application/pdf' });
-
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          ...shareData,
-          files: [file]
-        });
-        analytics.trackPDFShare(); // Track successful share
-      } else if (navigator.share) {
+      if (navigator.share) {
         await navigator.share(shareData);
-        analytics.trackPDFShare(); // Track successful share
+        analytics.trackPDFShare();
       } else {
+        // Fallback: Mostrar menú de compartir manual o copiar
         setShowShareMenu(true);
       }
-    } catch (error) {
-      if ((error as any).name !== 'AbortError') {
-        setShowShareMenu(true);
-      }
+    } catch (err) {
+      console.error('Error al compartir:', err);
+      // Si el usuario cancela o falla, mostramos el menú manual como respaldo
+      setShowShareMenu(true);
     } finally {
       setIsSharing(false);
     }
   };
 
   const shareLinks = {
-    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent("¡Mira mi simulacro de voto! Practica tú también aquí:")}`,
     whatsapp: `https://wa.me/?text=${encodeURIComponent("¡Mira mi simulacro de voto! Practica tú también aquí: " + window.location.href)}`,
     twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent("¡Mira mi simulacro de voto! Practica tú también aquí:")}`,
   };
@@ -329,7 +319,7 @@ export const SummaryView: React.FC<SummaryViewProps> = ({ votes, selectedDistric
             disabled={isSharing}
             className="w-full bg-vote-teal text-white font-black py-2.5 px-6 rounded-lg uppercase flex items-center justify-center gap-2 shadow-md text-[10px] border-b-2 border-[#004d5a]"
           >
-            <Share2 className="w-4 h-4" /> {isSharing ? 'PREPARANDO...' : 'COMPARTIR RESULTADO'}
+            <Share2 className="w-4 h-4" /> {isSharing ? '...' : 'COMPARTIR'}
           </button>
 
           <div className="w-full p-1 bg-white border border-gray-100 rounded-xl flex justify-center shadow-sm">

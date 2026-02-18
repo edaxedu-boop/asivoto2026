@@ -51,7 +51,7 @@ export const Home: React.FC<HomeProps> = ({ onStart }) => {
          <div className="hidden md:flex flex-1 w-full relative items-center justify-center min-h-0">
             <div className="relative h-full w-full max-w-7xl flex items-center justify-center">
                <img
-                  src="https://i.imgur.com/CaoYBIK.png"
+                  src="/images/img2.png"
                   alt="Muestra de Cédula Escritorio"
                   className="max-h-full max-w-full object-contain drop-shadow-2xl rounded-2xl md:rounded-3xl"
                />
@@ -96,7 +96,7 @@ export const Home: React.FC<HomeProps> = ({ onStart }) => {
          <div className="md:hidden flex-1 w-full flex items-center justify-center min-h-0 overflow-visible mb-4 relative">
             <div className="relative h-full w-full flex items-center justify-center">
                <img
-                  src="https://i.imgur.com/JCEVmu1.png"
+                  src="/images/img1.png"
                   alt="Muestra de Cédula Móvil"
                   className="max-h-full max-w-full object-contain drop-shadow-2xl rounded-xl"
                />

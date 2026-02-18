@@ -419,6 +419,22 @@ class AnalyticsService {
 
     return [headers.join(','), ...rows].join('\n');
   }
+
+  async resetBackendData(): Promise<boolean> {
+    try {
+      const response = await fetch(BACKEND_URL, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        this.clearAnalytics(); // También borrar local
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error resetting backend data:', error);
+      return false;
+    }
+  }
 }
 
 // Singleton instance
